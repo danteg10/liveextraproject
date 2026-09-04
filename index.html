@@ -1031,12 +1031,87 @@
     .fund-card { padding: 2.5rem 1.5rem; }
     .fund-meta { flex-direction: column; gap: 1rem; }
   }
+
+  /* ===== EVENT BANNER + TOP BAR ===== */
+  /* The banner and the nav ride together in one fixed stack, so the nav
+     always sits directly under the banner no matter how the banner wraps. */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+  }
+
+  .topbar nav { position: static; z-index: auto; }
+
+  .event-banner {
+    display: block;
+    text-decoration: none;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.7rem 1.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid rgba(200, 147, 47, 0.4);
+    transition: background 0.3s;
+  }
+
+  .event-banner:hover { background: #242e4c; }
+
+  .event-banner .eb-tag {
+    color: var(--gold-bright);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .event-banner .eb-dot { color: rgba(253, 250, 243, 0.35); margin: 0 0.55rem; }
+  .event-banner .eb-main { font-weight: 500; }
+  .event-banner .eb-short { display: none; }
+
+  .event-banner .eb-cta {
+    color: var(--gold-bright);
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 0.6rem;
+    border-bottom: 1px solid rgba(200, 147, 47, 0.5);
+  }
+
+  @media (max-width: 600px) {
+    .event-banner { padding: 0.6rem 1rem; font-size: 0.78rem; letter-spacing: 0.02em; }
+    .event-banner .eb-tag { display: block; margin-bottom: 0.15rem; }
+    .event-banner .eb-tag + .eb-dot { display: none; }
+    .event-banner .eb-long { display: none; }
+    .event-banner .eb-short { display: inline; white-space: nowrap; }
+    .event-banner .eb-cta { display: block; margin: 0.35rem auto 0; width: max-content; padding-bottom: 0.15rem; }
+  }
+
+  /* Keep the hero and every anchor target clear of the fixed stack.
+     --topbar-h is measured live by JS; the fallback covers no-JS. */
+  .hero { padding-top: calc(var(--topbar-h, 110px) + 3rem); }
+  section[id] { scroll-margin-top: calc(var(--topbar-h, 110px) + 1rem); }
+
+  @media (prefers-color-scheme: dark) {
+    .event-banner { background: var(--ink) !important; color: var(--paper) !important; }
+  }
 </style>
 </head>
 <body>
 <div class="grain"></div>
 
-<!-- NAV -->
+<!-- EVENT BANNER + NAV -->
+<div class="topbar" id="topbar">
+
+  <!-- Banner auto-hides after the outing. To change the event, edit the text
+       below AND the date in the script at the bottom of this file. -->
+  <a class="event-banner" id="event-banner" href="golf-outing.html"
+     data-hide-after="2026-09-27T00:00:00-04:00">
+    <span class="eb-tag">4th Annual</span><span class="eb-dot">&middot;</span><span class="eb-main">Dominic Gentile Memorial Golf Outing &mdash; <span class="eb-long">Saturday, September 26 at Fox Hollow Golf Club</span><span class="eb-short">Sat, Sept 26</span></span><span class="eb-cta">Details &amp; tickets &rarr;</span>
+  </a>
+
 <nav>
   <div class="nav-brand">Live <span>Extra</span></div>
   <ul class="nav-links">
@@ -1048,6 +1123,7 @@
   </ul>
   <a href="https://goldrush.uiowa.edu/dominic-gentile-dvm-sarcoma-research" class="nav-donate" target="_blank" rel="noopener">Donate</a>
 </nav>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -1396,10 +1472,10 @@
           <span class="day">26</span>
         </div>
         <div class="event-info">
-          <h4>Annual Memorial Golf Outing</h4>
-          <p>Our flagship event — a day of golf, friendship, and fundraising in Dominic's memory. See the calendar below for this year's details.</p>
+          <h4>4th Annual Memorial Golf Outing</h4>
+          <p>Saturday, September 26, 2026 at Fox Hollow Golf Club in Branchburg, NJ. A day of golf, friendship, and fundraising in Dominic's memory — with a silent auction, and all proceeds going to sarcoma cancer research.</p>
         </div>
-        <a href="#calendar" class="event-cta">View calendar →</a>
+        <a href="golf-outing.html" class="event-cta">Details &amp; tickets →</a>
       </div>
       <div class="event-row featured">
         <div class="event-date">
@@ -1467,6 +1543,33 @@
 </footer>
 
 <script>
+  // --- Event banner: measure the fixed stack, and retire the banner
+  //     automatically once the event date has passed. ---
+  (function () {
+    var banner = document.getElementById('event-banner');
+    var topbar = document.getElementById('topbar');
+
+    if (banner) {
+      var hideAfter = new Date(banner.getAttribute('data-hide-after'));
+      if (!isNaN(hideAfter) && new Date() >= hideAfter) {
+        banner.remove();
+      }
+    }
+
+    function measure() {
+      if (!topbar) return;
+      document.documentElement.style.setProperty(
+        '--topbar-h', topbar.offsetHeight + 'px'
+      );
+    }
+    measure();
+    window.addEventListener('load', measure);
+    window.addEventListener('resize', measure);
+    if (window.ResizeObserver && topbar) {
+      new ResizeObserver(measure).observe(topbar);
+    }
+  })();
+
   // Smooth scroll for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
